@@ -1,33 +1,39 @@
 import os
 
 class Simplex:
-  def __init__(self,restricoes=[]):
-    super()
-    self.matriz = self.criaTableau()
+  def __init__(self,restricoes):
+    self.matriz = self.criaTableau(restricoes)
     self.penultimaColuna = len(self.matriz[1]) - 1
-    os.execvpe
-
-  def criaTableau(self):
-    cabSimplex = ['', 'z']
-    tableau = []
-    qtdDecisao = int(input('Quantidade da variáveis de decisão: '))
-    qtdRestricoes = int(input ('Quantidade restrições: '))
-    for i in range(1,qtdDecisao+1):
-      cabSimplex.append('x{}'.format(i))
-    for i in range(1, qtdRestricoes+1):
-      cabSimplex.append('s{}'.format(i))
-    cabSimplex.append('sol')
-    tableau.append(cabSimplex)
-
-    for i in range(0,qtdRestricoes+1):
-      nomeLinha = 'z' if i == 0 else 's'+str(i)
-      restricoes = input('Digite os valores da linha {} separados por ; : '.format(nomeLinha)).strip()
-      linha_temp = [nomeLinha]
-      linha_temp = linha_temp + list(map(lambda x: int(x), restricoes.split(';') ))
-      tableau.append(linha_temp)
     
-    return tableau
+    
+  def criaTableau(self,restricoes):
+    linhaCab = ['', 'z'] # linha de cabeçalho que identificará quais a variáveis utilizadas
+    tableau = []
+    primeiraLinha = restricoes.readline()
+    primeiraLinha = primeiraLinha.split(' ')
+    self.qtdVariaveis = int(primeiraLinha[0])
+    self.qtdRestricoes = int(primeiraLinha[1])
 
+    for i in range(1,self.qtdVariaveis+1):
+      linhaCab +=  ['x{}'.format(i)]
+
+    for i in range(1,self.qtdRestricoes+1):
+      linhaCab += ['s{}'.format(i)]
+    linhaCab += ['sol']
+
+    for i in range(0, self.qtdRestricoes+1):
+      tempLinha = restricoes.readline()
+      tempLinha = tempLinha.replace('\n','')
+      if i == 0: #cria a linha z 
+         tempZ = list(map(lambda x: int(x), tempLinha.split(',')))
+         self.funcObjetivo = list(map(lambda x: x* -1,tempZ[1:1+self.qtdVariaveis]))
+         print(self.funcObjetivo)
+         tableau.append(['z']+ tempZ)
+      else: #cria as demais linhas
+        tableau.append(['s{}'.format(i)]+ list(map(lambda x: int(x), tempLinha.split(','))))
+
+    tableau.insert(0,linhaCab)
+    return tableau
   
   def encontrouOtimo(self):
     '''
@@ -90,7 +96,6 @@ class Simplex:
     print('Nova linha pivo - ', end="")
     print(self.novaLinhaPivo)
     self.printaMatriz()
-    input('Pressiona enter para continuar')
 
   def atualizaTableau(self, linhaP, colunaP):
     '''
@@ -109,30 +114,32 @@ class Simplex:
         print(self.matriz[linha][1:])
         self.matriz[linha][1:] = list(map(lambda x,y: x+y,tempLp, self.matriz[linha][1:]))
         self.printaMatriz()
-        # print(self.matriz[linha])
-        input('Pressiona enter para continuar')
 
   def printaMatriz(self):
     '''
-      Apresenta os valore do simplex
+      Apresenta os valores do simplex
     '''
-    for linha in enumerate(self.matriz):
+    for id, linha in enumerate(self.matriz):
       print(linha)
-
   
+  def apresentaSolucao(self):
+    self.printaMatriz()
+    print('--------------------------Resultado--------------------------')
+    print('Função objetivo - {}'.format(self.funcObjetivo))
+    print('z={}'.format(self.matriz[1][-1]))
+    for i in range(2,len(self.matriz)):
+      print('{}={}'.format(self.matriz[i][0],self.matriz[i][self.penultimaColuna]))
 
 def main():
-  simplex = Simplex()
-  simplex.printaMatriz()
-  while(not simplex.encontrouOtimo()):
-    cp = simplex.escolheColuna()#Acha a coluna pivô
-    lp = simplex.escolheLinha(cp)#Acha a linha pivô
-    simplex.atualizaLinhaPivo(lp,cp)
-    simplex.atualizaTableau(lp, cp)
+  with open('restricoes.txt', 'r') as restricoes:
+    simplex = Simplex(restricoes)
     simplex.printaMatriz()
-  print(simplex.matriz[1][-1])
-  
-    
+    while(not simplex.encontrouOtimo()):
+      cp = simplex.escolheColuna()#Acha a coluna pivô
+      lp = simplex.escolheLinha(cp)#Acha a linha pivô
+      simplex.atualizaLinhaPivo(lp,cp)
+      simplex.atualizaTableau(lp, cp)
+    simplex.apresentaSolucao()
 
 if __name__ == '__main__':
   main()
