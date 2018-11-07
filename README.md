@@ -1,4 +1,4 @@
-# simplexImplementation
+# Simplex
 ## A matriz deve ser inserida da seguinte maneira:
 1. Separados por espaço identificar a quantidade de variáveis de decisão e quantidade de restrições
 2. Nas linhas que se seguem serão inseridas em ordem todas as restrições, incluindo a Z
