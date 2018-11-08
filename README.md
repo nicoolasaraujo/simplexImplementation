@@ -1,5 +1,5 @@
 # Simplex
-##Execução
+## Execução
 ```
 python3 simplex.py tst.txt
 ```
